@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a34">
+<meta name="description" content="Bước vào chánh điện 3D, thiền thở, lần chuỗi và dạo vườn trong một không gian bình yên. Không cần đăng nhập.">
+<title>Thiền Online — Một chốn bình yên</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;500&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+:root{--ivory:#f4efe2;--gold:#d9b05a;--lotus:#e8aeb7;--glass:rgba(18,34,30,.6)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#1d3a3a;color:var(--ivory);font:15px/1.55 "Be Vietnam Pro",system-ui,sans-serif}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:linear-gradient(#f0b98c,#8fa79a 40%,#1d3a3a 78%)}
+.glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(244,239,226,.16)}
+#top{position:fixed;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;pointer-events:none}
+#top>*{border-radius:999px;padding:5px 14px;font-size:13px}
+#top b{font:italic 500 24px "Cormorant Garamond",Georgia,serif;padding:2px 16px}
+#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-width:calc(100% - 20px);display:flex;gap:4px;overflow-x:auto;padding:7px;border-radius:22px;scrollbar-width:none}
+#dock::-webkit-scrollbar{display:none}
+button{font:inherit;cursor:pointer}
+#dock button{background:none;border:0;color:var(--ivory);padding:8px 12px;border-radius:14px;font-size:13px;white-space:nowrap}
+#dock button:hover,#dock button:focus-visible{background:rgba(255,255,255,.16);outline:none}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 74px);width:min(440px,calc(100% - 24px));max-height:58vh;overflow:auto;border-radius:22px;padding:16px 18px}
+.sheet[hidden],#welcome[hidden],#nogl[hidden]{display:none}
+h1,h2{font:italic 500 30px/1.15 "Cormorant Garamond",Georgia,serif;margin:0 0 6px}
+h2{font-size:26px}
+p{margin:0 0 10px}.sub{opacity:.72;font-size:13px}
+.pri{background:var(--gold);color:#2b2108;border:0;border-radius:12px;padding:10px 18px;font-weight:500}
+input,select{font:inherit;color:var(--ivory);background:rgba(255,255,255,.1);border:1px solid rgba(244,239,226,.22);border-radius:10px;padding:8px 10px}
+input:focus-visible,select:focus-visible,.pri:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+select option{color:#222}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.chips label{border:1px solid rgba(244,239,226,.25);border-radius:12px;padding:7px 13px;cursor:pointer}
+.chips input{position:absolute;opacity:0}
+.chips label:has(input:checked){border-color:var(--gold);background:rgba(217,176,90,.18)}
+.chips label:has(input:focus-visible){outline:2px solid var(--gold)}
+#orb{width:64px;height:64px;border-radius:50%;margin:48px auto;background:radial-gradient(var(--lotus),#b96a7a);display:grid;place-items:center;color:#3b1520;font-weight:500;transition:transform 4s ease-in-out}
+#bead{display:block;margin:12px auto;width:120px;height:120px;border-radius:50%;border:2px solid var(--gold);background:rgba(217,176,90,.14);color:var(--ivory);font:500 38px "Cormorant Garamond",Georgia,serif}
+.bar{height:6px;background:rgba(255,255,255,.14);border-radius:9px;margin:4px 0 12px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--gold)}
+.g{display:flex;justify-content:space-between;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:6px 4px;border-bottom:1px solid rgba(244,239,226,.15)}
+.ft{border-left:3px solid var(--gold);padding:8px 12px;margin-top:8px;background:rgba(255,255,255,.07);border-radius:6px}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);padding:7px 16px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none}
+#welcome{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;overflow:auto;background:radial-gradient(circle at 50% 30%,#2f5a50,#14262a)}
+#welcome .card{width:min(440px,100%)}
+#welcome h1{font-size:clamp(34px,8vw,48px)}
+#nogl{position:fixed;inset:0 0 auto;top:50px;text-align:center;padding:14px;font-size:13px;background:rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){#orb{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Chánh điện 3D"></canvas>
+<div id="nogl" hidden>Không tải được thư viện 3D (cần mạng lần đầu). Các tính năng thiền thở, lần chuỗi, mục tiêu vẫn dùng được.</div>
+
+<div id="welcome"><div class="card">
+  <p class="sub">Chào mừng bạn đến với Thiền Online</p>
+  <h1>Chọn một chỗ cho riêng mình.</h1>
+  <p class="sub">Tên và nhân vật của bạn sẽ hiện trong chánh điện.</p>
+  <div class="row"><input id="name" placeholder="Tên hiển thị" maxlength="24" aria-label="Tên hiển thị"></div>
+  <div class="row chips"><label><input type="radio" name="o" value="Áo lam" checked>Áo lam</label><label><input type="radio" name="o" value="Áo nâu">Áo nâu</label><label><input type="radio" name="o" value="Áo vàng">Áo vàng</label></div>
+  <div class="row chips"><label><input type="radio" name="g" value="Nam" checked>Nam · đầu trọc</label><label><input type="radio" name="g" value="Nữ">Nữ · búi tóc</label></div>
+  <button class="pri" id="enter">Vào chánh điện</button>
+  <p class="sub" style="margin-top:12px">Lựa chọn và thời gian thực hành được lưu trên thiết bị này. Không cần đăng nhập.</p>
+</div></div>
+
+<div id="top"><b class="glass">thiền.</b><span class="glass" id="stat"></span><span class="glass" id="who"></span></div>
+<div id="toast" class="glass" role="status"></div>
+
+<aside class="sheet glass" id="p-tho" hidden>
+  <h2>Trở về với hơi thở.</h2><p class="sub">Thả lỏng vai. Để hơi thở đến tự nhiên, không cần cố hít thật sâu.</p>
+  <div class="row"><label>Vào <input id="tin" type="number" min="2" max="8" value="4" style="width:60px"> giây</label><label>Ra <input id="tout" type="number" min="2" max="10" value="6" style="width:60px"> giây</label>
+  <select id="dur" aria-label="Thời lượng"><option value="60">1 phút</option><option value="180">3 phút</option><option value="300">5 phút</option></select></div>
+  <div id="orb">4</div>
+  <p id="phase" style="text-align:center">Bắt đầu khi bạn đã sẵn lòng</p><p id="left" class="sub" style="text-align:center">Còn lại 01:00</p>
+  <div class="row" style="justify-content:center"><button class="pri" id="go">Bắt đầu thở</button></div>
+  <p class="sub" style="text-align:center">Không nín thở. Nếu thấy không thoải mái, hãy trở về nhịp thở tự nhiên.</p>
+</aside>
+<aside class="sheet glass" id="p-chuoi" hidden>
+  <h2>Lần chuỗi</h2><p class="sub">Mỗi hạt chuỗi, một niệm an. Chạm hạt hoặc nhấn phím 3.</p>
+  <button id="bead" aria-label="Lần một hạt">0</button><p id="round" style="text-align:center"></p>
+</aside>
+<aside class="sheet glass" id="p-tien" hidden>
+  <h2>Mục tiêu hôm nay</h2>
+  <div class="g"><span>An trú 5 phút</span><span id="g1t"></span></div><div class="bar"><i id="g1"></i></div>
+  <div class="g"><span>Lễ Phật 3 lần</span><span id="g2t"></span></div><div class="bar"><i id="g2"></i></div>
+  <div class="g"><span>Lần chuỗi 27 hạt</span><span id="g3t"></span></div><div class="bar"><i id="g3"></i></div>
+  <h2 style="margin-top:14px">Bảng xếp hạng</h2>
+  <table><thead><tr><th>Tên</th><th>An trú</th><th>Lễ Phật</th><th>Hạt</th></tr></thead><tbody id="rank"></tbody></table>
+</aside>
+<aside class="sheet glass" id="p-set" hidden>
+  <h2>Cài đặt</h2>
+  <div class="row"><input id="sname" maxlength="24" aria-label="Tên"><label>Âm lượng <input id="vol" type="range" min="0" max="100"></label><label><input id="calm" type="checkbox"> Giảm chuyển động</label><button class="pri" id="save">Lưu thay đổi</button></div>
+  <h2 style="margin-top:12px">Một lời nhắc cho năm nay</h2><p class="sub">Chỉ để giải trí, không phải dự đoán chắc chắn. Không lưu hay gửi đi.</p>
+  <div class="row"><input id="fn" placeholder="Họ và tên"><input id="fy" type="number" placeholder="Năm sinh" style="width:100px"><button class="pri" id="fb">Xem lời luận</button></div>
+  <div class="ft" id="ft" aria-live="polite">Nhập thông tin để nhận một lời nhắc dành riêng cho bạn.</div>
+</aside>
+
+<aside class="sheet glass" id="p-am" hidden>
+  <h2>Âm thanh thiền</h2><p class="sub">Âm nền được tạo trực tiếp trên thiết bị, không cần tải tệp.</p>
+  <div class="row"><button class="pri" id="amt">Bật âm thanh</button><label>Âm lượng <input id="avol" type="range" min="0" max="100"></label></div>
+  <div class="row chips" id="aml">
+    <label><input type="checkbox" data-k="drone">Tiếng ngân</label><label><input type="checkbox" data-k="wind">Tiếng gió</label><label><input type="checkbox" data-k="water">Tiếng suối</label><label><input type="checkbox" data-k="birds">Chim hót</label><label><input type="checkbox" data-k="bell">Chuông chùa</label><label><input type="checkbox" data-k="mo">Tiếng mõ</label>
+  </div>
+</aside>
+<nav id="dock" class="glass" aria-label="Thực hành">
+  <button data-a="tho">Thiền thở</button><button data-a="lay">Lễ Phật</button><button data-a="chuoi">Lần chuỗi</button><button data-a="chap">Chắp tay</button><button data-a="bell">Thỉnh chuông</button><button data-a="am">Âm thanh</button><button data-a="seat">Chỗ ngồi</button><button data-a="garden">Dạo vườn</button><button data-a="view">Góc nhìn</button><button data-a="tien">Tiến độ</button><button data-a="set">Cài đặt</button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const K='thien-online-v2',today=new Date().toISOString().slice(0,10);
+let S={name:'Khách an nhiên',outfit:'Áo lam',gender:'Nam',vol:50,calm:matchMedia('(prefers-reduced-motion:reduce)').matches,secs:0,lays:0,beads:0,day:today,dS:0,dL:0,dB:0,entered:0,seat:-1};
+try{Object.assign(S,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
+if(S.day!==today){S.day=today;S.dS=S.dL=S.dB=0}S.seat=-1;
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const pad=n=>String(n).padStart(2,'0'),mmss=t=>pad(Math.floor(t/60))+':'+pad(t%60);
+const H={lay(){},bell(){},near(){toast('Cần tải thư viện 3D để chọn chỗ')},garden(){},view(){},rename(){}};
+let ac,tt;
+function tone(f,d,v){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(S.vol/100*(v||.3),ac.currentTime);g.gain.exponentialRampToValueAtTime(1e-4,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(tt);tt=setTimeout(()=>t.style.opacity=0,2200)}
+function openP(id){const el=$('#p-'+id),was=!el.hidden;$$('.sheet').forEach(e=>e.hidden=true);el.hidden=was}
+
+const taken=new Set([2,7,9,14,18,23,27,31,36,40,45,52]);
+const seatPos=i=>[[-6,-4,-2,2,4,6][i%6],-6+Math.floor(i/6)*1.8];
+
+function lay(){S.lays++;S.dL++;tone(196,1.6,.18);H.lay(1.4,.85);ui();save()}
+function bell(){bellSound(1);H.bell()}
+function bead(){S.beads++;S.dB++;tone(660,.12,.1);ui();save()}
+const A={tho:()=>openP('tho'),lay,chuoi:()=>openP('chuoi'),chap:()=>{H.lay(.9,.35);tone(330,.9,.1)},bell,seat:()=>H.near(),garden:()=>H.garden(),view:()=>H.view(),tien:()=>openP('tien'),set:()=>openP('set')};
+$$('#dock button').forEach(b=>b.onclick=()=>A[b.dataset.a]());
+$('#bead').onclick=bead;
+addEventListener('keydown',e=>{if(e.target.matches('input,select'))return;if(e.key==='1')lay();if(e.key==='2')bell();if(e.key==='3')bead()});
+
+let bt=null;
+$('#go').onclick=()=>{
+  if(bt){clearInterval(bt);bt=null;$('#go').textContent='Bắt đầu thở';$('#phase').textContent='Bắt đầu khi bạn đã sẵn lòng';return}
+  const tin=+$('#tin').value||4,tout=+$('#tout').value||6,total=+$('#dur').value,orb=$('#orb');let t=0,c=0,inh=true;$('#go').textContent='Dừng';
+  const step=()=>{orb.style.transition=S.calm?'none':`transform ${inh?tin:tout}s ease-in-out`;orb.style.transform=inh?'scale(1.9)':'scale(1)';$('#phase').textContent=inh?'Thở vào':'Thở ra';c=inh?tin:tout;orb.textContent=c};step();
+  bt=setInterval(()=>{t++;c--;if(t>=total){clearInterval(bt);bt=null;$('#go').textContent='Bắt đầu thở';$('#phase').textContent='Hoàn thành. An nhiên.';$('#left').textContent='Còn lại 00:00';tone(523,3,.3);return}
+  if(c<=0){inh=!inh;step()}else orb.textContent=c;$('#left').textContent='Còn lại '+mmss(total-t)},1000)};
+$('#dur').onchange=()=>$('#left').textContent='Còn lại '+mmss(+$('#dur').value);
+
+setInterval(()=>{if(document.hidden)return;S.secs++;S.dS++;if(S.secs%5===0)save();ui()},1000);
+function ui(){
+  $('#stat').textContent=`An trú ${mmss(S.secs)} · ${S.lays} lần lễ Phật`;
+  $('#who').textContent=`${S.name} · ${S.outfit}`+(S.seat>=0?` · đệm ${S.seat+1}`:'');
+  $('#bead').textContent=S.beads%108;
+  $('#round').textContent=`Vòng thứ ${Math.floor(S.beads/108)+1} · ${S.beads%108} / 108 · ${Math.floor(S.beads/108)} vòng trọn`;
+  const g=(i,v,m,t)=>{$('#'+i).style.width=Math.min(100,v/m*100)+'%';$('#'+i+'t').textContent=t};
+  g('g1',S.dS,300,`${mmss(Math.min(S.dS,300))} / 05:00`);g('g2',S.dL,3,`${Math.min(S.dL,3)} / 3 lượt`);g('g3',S.dB,27,`${Math.min(S.dB,27)} / 27 hạt`);
+  $('#rank').innerHTML=`<tr><td></td><td>${mmss(S.secs)}</td><td>${S.lays}</td><td>${S.beads}</td></tr>`;$('#rank td').textContent=S.name;
+}
+const msgs=['Năm nay hãy bớt vội: việc đến đúng lúc sẽ đến.','Một lời nói dịu dàng hôm nay là hạt giống cho cả mùa sau.','Điều bạn đang giữ chặt sẽ nhẹ đi nếu bạn buông một ngón tay.','Hãy chăm giấc ngủ và hơi thở trước, mọi việc khác sẽ theo sau.','Người bạn cần cảm ơn đang ở rất gần. Hãy nói sớm.','Đừng so mình với người khác; mỗi người một mùa nở.'];
+$('#fb').onclick=()=>{const n=$('#fn').value.trim(),y=+$('#fy').value;if(!n||!y){$('#ft').textContent='Vui lòng nhập họ tên và năm sinh.';return}let h=0;for(const c of n+y)h=(h*31+c.charCodeAt(0))%997;$('#ft').textContent=`${n} (${y}): ${msgs[h%msgs.length]}`};
+$('#save').onclick=()=>{S.name=$('#sname').value.trim()||S.name;S.vol=+$('#vol').value;S.calm=$('#calm').checked;H.rename();ui();save();toast('Đã lưu')};
+$('#enter').onclick=()=>{S.name=$('#name').value.trim()||'Khách an nhiên';S.outfit=document.querySelector('[name=o]:checked').value;S.gender=document.querySelector('[name=g]:checked').value;S.entered=1;$('#welcome').hidden=true;H.rename();ui();save();tone(523,2.5,.25);setAmb(1)};
+if(S.entered)$('#welcome').hidden=true;
+$('#sname').value=S.name;$('#vol').value=S.vol;$('#calm').checked=S.calm;
+
+/* ===== Âm thanh thiền ===== */
+S.amb=Object.assign({on:0,drone:1,wind:1,water:1,birds:1,mo:0,bell:1},S.amb||{});if(S.amb.v!==2)Object.assign(S.amb,{water:1,birds:1,bell:1,v:2});
+const AM={m:null,g:{}},LV={drone:.5,wind:.2,water:.7};
+function ctx(){ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}
+function noiseBuf(c,brown){const b=c.createBuffer(1,c.sampleRate*4,c.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b}
+function lg(c,k){const g=c.createGain();g.gain.value=0;g.connect(AM.m);AM.g[k]=g;return g}
+function buildAmb(){
+  const c=ctx(),m=c.createGain();m.gain.value=0;m.connect(c.destination);AM.m=m;
+  const dg=lg(c,'drone');
+  [110,164.8,220,277.2].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain(),l=c.createOscillator(),q=c.createGain();o.frequency.value=f;g.gain.value=.2/(i+1);l.frequency.value=.05+i*.03;q.gain.value=g.gain.value*.6;l.connect(q);q.connect(g.gain);o.connect(g);g.connect(dg);o.start();l.start()});
+  const wg=lg(c,'wind'),ws=c.createBufferSource(),wf=c.createBiquadFilter(),wl=c.createOscillator(),wq=c.createGain();
+  ws.buffer=noiseBuf(c);ws.loop=true;wf.type='bandpass';wf.frequency.value=520;wf.Q.value=.7;wl.frequency.value=.08;wq.gain.value=260;wl.connect(wq);wq.connect(wf.frequency);ws.connect(wf);wf.connect(wg);ws.start();wl.start();
+  const hg=lg(c,'water'),hs=c.createBufferSource(),hf=c.createBiquadFilter(),hb=c.createGain();
+  hs.buffer=noiseBuf(c,1);hs.loop=true;hf.type='lowpass';hf.frequency.value=900;hb.gain.value=.35;hs.connect(hf);hf.connect(hb);hb.connect(hg);hs.start();
+  [0,1,2,3,4].forEach(i=>{const x=c.createBufferSource(),f=c.createBiquadFilter(),l=c.createOscillator(),q=c.createGain(),a=c.createOscillator(),ag=c.createGain(),vg=c.createGain();
+    x.buffer=noiseBuf(c);x.loop=true;f.type='bandpass';f.frequency.value=650+i*420;f.Q.value=7;l.frequency.value=.5+i*.43;q.gain.value=300+i*110;l.connect(q);q.connect(f.frequency);
+    vg.gain.value=.5;a.frequency.value=1.4+i*.95;ag.gain.value=.16;a.connect(ag);ag.connect(vg.gain);x.connect(f);f.connect(vg);vg.connect(hg);x.start();l.start();a.start()});
+  birdLoop();moLoop();setTimeout(autoBell,6000);
+}
+function applyAmb(){if(!AM.m)return;const c=ac,on=S.amb.on;AM.m.gain.setTargetAtTime(on?S.vol/100*.9:0,c.currentTime,.7);
+  for(const k in LV)AM.g[k].gain.setTargetAtTime(on&&S.amb[k]?LV[k]:0,c.currentTime,1.5)}
+function rev(){if(AM.rv)return AM.rv;const c=ctx(),cv=c.createConvolver(),n=c.sampleRate*3.5|0,b=c.createBuffer(2,n,c.sampleRate);
+  for(let h=0;h<2;h++){const d=b.getChannelData(h);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.5)}
+  cv.buffer=b;const g=c.createGain();g.gain.value=.5;cv.connect(g);g.connect(c.destination);return AM.rv=cv}
+function birdSong(){const c=ctx(),v=S.vol/100*.05,t0=c.currentTime+.05,r=Math.random(),f0=2200+Math.random()*1800;
+  const note=(t,f1,f2,d,vv)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vv,t+d*.25);g.gain.exponentialRampToValueAtTime(1e-4,t+d);o.connect(g);g.connect(c.destination);g.connect(rev());o.start(t);o.stop(t+d+.02)};
+  if(r<.4){for(let i=0;i<6;i++)note(t0+i*.07,f0,f0*1.15,.06,v*.8)}
+  else if(r<.75){note(t0,f0*1.2,f0*.9,.28,v);note(t0+.35,f0*1.1,f0*.8,.32,v*.9)}
+  else{note(t0,f0*.8,f0*1.3,.22,v);note(t0+.3,f0*1.3,f0,.18,v*.8);note(t0+.55,f0*.85,f0*1.35,.3,v)}}
+function birdLoop(){if(S.amb.on&&S.amb.birds&&!document.hidden)birdSong();setTimeout(birdLoop,4000+Math.random()*7000)}
+function bellSound(k){const c=ctx(),t=c.currentTime,f=174.6,out=c.createGain();out.gain.value=S.vol/100*k*.3;out.connect(c.destination);out.connect(rev());
+  [[1,1,9],[1.003,.6,9],[2.01,.5,7],[2.76,.32,5.5],[3.99,.2,4],[5.42,.12,2.8],[.5,.35,10]].forEach(([r,a,d])=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=f*r;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.012);g.gain.exponentialRampToValueAtTime(1e-4,t+d);o.connect(g);g.connect(out);o.start(t);o.stop(t+d+.1)});
+  AM.nb=AM.nb||noiseBuf(c);const n=c.createBufferSource(),nf=c.createBiquadFilter(),ng=c.createGain();n.buffer=AM.nb;nf.type='bandpass';nf.frequency.value=1800;
+  ng.gain.setValueAtTime(.25,t);ng.gain.exponentialRampToValueAtTime(1e-4,t+.08);n.connect(nf);nf.connect(ng);ng.connect(out);n.start(t);n.stop(t+.1)}
+function autoBell(){if(S.amb.on&&S.amb.bell&&!document.hidden){bellSound(.6);H.bell()}setTimeout(autoBell,22000+Math.random()*20000)}
+function moLoop(){
+  if(S.amb.on&&S.amb.mo&&!document.hidden){const c=ac,t=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(620,t);o.frequency.exponentialRampToValueAtTime(380,t+.12);
+    g.gain.setValueAtTime(S.vol/100*.45,t);g.gain.exponentialRampToValueAtTime(1e-4,t+.16);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.18)}
+  setTimeout(moLoop,1300)}
+function amUI(){$('#amt').textContent=S.amb.on?'Tắt âm thanh':'Bật âm thanh';$('#avol').value=S.vol;$$('#aml input').forEach(i=>i.checked=!!S.amb[i.dataset.k])}
+function setAmb(on){S.amb.on=on?1:0;if(on&&!AM.m)buildAmb();else if(on)ctx();applyAmb();amUI();save()}
+A.am=()=>openP('am');
+$('#amt').onclick=()=>setAmb(!S.amb.on);
+$$('#aml input').forEach(i=>i.onchange=()=>{S.amb[i.dataset.k]=i.checked?1:0;if(!S.amb.on)setAmb(1);else{applyAmb();save()}});
+$('#avol').oninput=e=>{S.vol=+e.target.value;$('#vol').value=S.vol;applyAmb();save()};
+$('#vol').oninput=e=>{S.vol=+e.target.value;$('#avol').value=S.vol;applyAmb()};
+amUI();
+if(S.amb.on&&S.entered){S.amb.on=0;const once=()=>{removeEventListener('pointerdown',once);removeEventListener('keydown',once);setAmb(1)};addEventListener('pointerdown',once);addEventListener('keydown',once);toast('Chạm vào màn hình để bật âm thanh nền')}
+
+/* ===== 3D ===== */
+const T=window.THREE;
+if(!T){$('#nogl').hidden=false;ui();return}
+const cv=$('#c'),rd=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+rd.setPixelRatio(Math.min(devicePixelRatio,2));rd.shadowMap.enabled=true;
+const sc=new T.Scene(),cam=new T.PerspectiveCamera(48,1,.1,300);sc.fog=new T.Fog(0x4d706a,30,85);
+const MS=(c,o)=>new T.MeshStandardMaterial(Object.assign({color:c,roughness:.75},o));
+const E=(g,m,x,y,z,p,sh)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);o.castShadow=!!sh;o.receiveShadow=true;(p||sc).add(o);return o};
+const CY=(a,b,h,n)=>new T.CylinderGeometry(a,b,h,n||16),SP=(r,w,h)=>new T.SphereGeometry(r,w||16,h||12);
+let sd=7;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;
+
+sc.add(new T.HemisphereLight(0xffe2bd,0x2a4a46,.75));
+const sun=new T.DirectionalLight(0xffc48a,1);sun.position.set(-12,16,10);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-22,right:30,top:22,bottom:-22,far:60});sc.add(sun);
+
+function plank(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');for(let i=0;i<8;i++){g.fillStyle=`hsl(27,${34+rnd()*10}%,${27+rnd()*9}%)`;g.fillRect(0,i*32,256,31)}const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(5,8);return t}
+const fl=E(new T.BoxGeometry(18,.3,27),MS(0xffffff,{map:plank(),roughness:.55}),0,-.15,1);
+const gr=E(new T.PlaneGeometry(300,300).rotateX(-Math.PI/2),MS(0x2c4d3f),0,-.3,0);
+for(let i=0;i<7;i++)E(new T.ConeGeometry(26,30+rnd()*18,5),MS(0x3a5b58),-90+i*30,10,-95);
+
+const red=MS(0x8a2f26),roof=new T.Group();sc.add(roof);
+[-10,-5,0,5,10].forEach(z=>[-8,8].forEach(x=>{E(CY(.38,.38,7,18),red,x,3.5,z,0,1);E(CY(.55,.6,.3,18),MS(0x8d8a82),x,.15,z)}));
+[-10,-5,0,5,10].forEach(z=>E(new T.BoxGeometry(17.4,.35,.4),red,0,7.15,z,0,1));
+E(new T.BoxGeometry(.35,.35,25),red,-8,7.15,0);E(new T.BoxGeometry(.35,.35,25),red,8,7.15,0);
+[-1,1].forEach(s=>{const m=E(new T.BoxGeometry(11.6,.3,29),MS(0x2b3a3a,{roughness:.6,side:T.DoubleSide}),s*5.5,8.55,0.5,roof);m.rotation.z=s*.27});
+E(new T.BoxGeometry(.6,.3,29),MS(0xd9b05a,{metalness:.5}),0,10.05,.5,roof);
+E(new T.BoxGeometry(18,9,.4),MS(0xe8dcc0),0,4.5,-12.7);
+E(new T.TorusGeometry(1.9,.12,12,48),MS(0xd9b05a,{metalness:.6}),0,6,-12.45);
+E(new T.CircleGeometry(1.9,48),new T.MeshBasicMaterial({color:0xffd9a0}),0,6,-12.48);
+
+const gold=MS(0xd9b05a,{metalness:.7,roughness:.35,emissive:0x3a2a08});
+E(new T.BoxGeometry(7,.4,3.4),MS(0x7a2a22),0,.2,-10.6,0,1);E(new T.BoxGeometry(5,.4,2.4),MS(0x8c3328),0,.6,-10.8,0,1);
+E(CY(1.5,1.7,.3,32),MS(0xe8aeb7),0,.95,-10.9,0,1);E(CY(1.15,1.35,.28,32),MS(0xf4cdd3),0,1.25,-10.9,0,1);
+E(CY(.4,.95,1.7,24),gold,0,2.2,-10.9,0,1);E(SP(.4,24,16),gold,0,3.3,-10.9,0,1);E(SP(.15),gold,0,3.72,-10.9);
+const halo=E(new T.TorusGeometry(1.05,.05,8,48),MS(0xffd27a,{emissive:0xffb347,emissiveIntensity:1}),0,3.3,-11.4);
+E(new T.CircleGeometry(1.7,40),new T.MeshBasicMaterial({color:0xffc870,transparent:true,opacity:.25,blending:T.AdditiveBlending,depthWrite:false}),0,3.3,-11.42);
+const flames=[];
+[-2.3,2.3].forEach(x=>{E(CY(.12,.12,.55,10),MS(0xf4efe2),x,1.07,-10.3);const f=E(SP(.09),new T.MeshBasicMaterial({color:0xffb050}),x,1.5,-10.3);const l=new T.PointLight(0xffa850,1,10);l.position.set(x,1.7,-10);sc.add(l);flames.push(l)});
+[-6.5,6.5].forEach(x=>[-8,-2,4,10].forEach(z=>{E(CY(.02,.02,1.2,4),MS(0x222222),x,6.4,z);const o=E(SP(.38),MS(0xff9a4a,{emissive:0xff7a2a,emissiveIntensity:1.2}),x,5.6,z);o.scale.y=1.3}));
+
+const bp=new T.Group();bp.position.set(-7,7,-7.5);sc.add(bp);E(CY(.03,.03,1,6),MS(0x222222),0,-.5,0,bp);E(CY(.26,.55,.85,20),gold,0,-1.4,0,bp,1);
+
+const cush=[];
+for(let i=0;i<60;i++){const[x,z]=seatPos(i),m=E(CY(.5,.52,.18,20),MS(taken.has(i)?0x6b2f2f:0x9c3f3a),x,.09,z,0,1);m.userData.i=i;cush.push(m)}
+
+const SK=0xe6bf9c,HR=0x1e1815;
+function fig(c,f){const g=new T.Group(),b=E(CY(.3,.46,1.1),MS(c),0,.55,0,g,1),hd=new T.Group();hd.position.y=1.3;g.add(hd);
+  E(SP(.24),MS(SK),0,0,0,hd,1);if(f){E(new T.SphereGeometry(.26,16,10,0,6.3,0,1.7),MS(HR),0,.02,.02,hd);E(SP(.12,10,8),MS(HR),0,.2,.2,hd)}
+  g.userData={b,hd};sc.add(g);return g}
+function setSit(g,s){const u=g.userData;u.b.scale.y=s?.55:1;u.b.position.y=s?.3:.55;u.hd.position.y=s?.85:1.3}
+const cols=[0x3b6ea5,0x7a5230,0xd4a62c];
+taken.forEach(i=>{const g=fig(cols[i%3],i%2),[x,z]=seatPos(i);g.position.set(x,.18,z);setSit(g,1)});
+
+const OUT={'Áo lam':0x3b6ea5,'Áo nâu':0x7a5230,'Áo vàng':0xd4a62c};
+const P={g:null,tg:null,want:-1,lab:null};
+function mkPlayer(){const old=P.g?P.g.position.clone():new T.Vector3(0,0,9);if(P.g)sc.remove(P.g);P.g=fig(OUT[S.outfit]||0x3b6ea5,S.gender==='Nữ');P.g.position.copy(old);
+  E(new T.TorusGeometry(.55,.03,6,32).rotateX(Math.PI/2),new T.MeshBasicMaterial({color:0xd9b05a}),0,.03,0,P.g);
+  const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='500 28px sans-serif';x.textAlign='center';x.fillStyle='rgba(18,34,30,.7)';x.fillRect(0,8,256,46);x.fillStyle='#f4efe2';x.fillText(S.name.slice(0,18),128,40);
+  const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false}));s.scale.set(2.4,.6,1);s.position.y=2.1;s.renderOrder=9;P.g.add(s);
+  if(S.seat>=0)setSit(P.g,1)}
+mkPlayer();H.rename=()=>{mkPlayer()};
+
+/* garden */
+E(new T.CircleGeometry(4.6,48).rotateX(-Math.PI/2),MS(0x2f7078,{roughness:.1,metalness:.25}),16,-.27,4);
+for(let i=0;i<9;i++){const a=i*.7,x=16+Math.cos(a)*(1+rnd()*2.5),z=4+Math.sin(a)*(1+rnd()*2.5);E(CY(.5,.5,.03,14),MS(0x3f8a4f),x,-.24,z);if(i%2)E(SP(.2,10,8),MS(0xf2a7b8,{emissive:0x5a2030}),x,-.15,z).scale.y=.6}
+for(let i=0;i<5;i++)E(CY(.45,.5,.1,8),MS(0x8a8f8a),9.6+i*.9,-.25,4+Math.sin(i)*.3);
+for(let i=0;i<30;i++){const side=rnd()>.28,x=side?10.5+rnd()*14:-12-rnd()*12,z=-12+rnd()*28;if(side&&((x-16)**2+(z-4)**2<42||(x<13&&Math.abs(z-4)<2)))continue;
+  const h=1.5+rnd()*1.5;E(CY(.18,.28,h,8),MS(0x5a3d28),x,h/2,z,0,1);for(let k=0;k<3;k++)E(new T.ConeGeometry(1.5-k*.35,1.8,8),MS(k?0x3f8a5a:0x2f7a4c),x,h+.6+k*.9,z,0,1)}
+
+/* petals */
+const N=240,pp=new Float32Array(N*3);for(let i=0;i<N;i++){pp[i*3]=-10+rnd()*36;pp[i*3+1]=rnd()*9;pp[i*3+2]=-12+rnd()*28}
+const pg=new T.BufferGeometry();pg.setAttribute('position',new T.BufferAttribute(pp,3));
+sc.add(new T.Points(pg,new T.PointsMaterial({size:.13,color:0xffc6d2,transparent:true,opacity:.85,depthWrite:false})));
+
+/* camera */
+const V={mode:0,th:.15,ph:1.12,d:25,dd:25,tg:new T.Vector3(0,1.8,-1)},DIST=[25,7,16],NAMES=['Toàn cảnh','Theo bạn','Khu vườn'];
+const focus=()=>V.mode===1?P.g.position.clone().setY(1.2):V.mode===2?new T.Vector3(14,1,3):new T.Vector3(0,1.8,-1);
+H.view=()=>{V.mode=(V.mode+1)%3;V.dd=DIST[V.mode];toast('Góc nhìn: '+NAMES[V.mode])};
+function stand(){if(S.seat>=0){cush[S.seat].material.emissive.setHex(0);S.seat=-1;setSit(P.g,0);P.g.position.y=0;ui()}}
+function sit(i){S.seat=i;const[x,z]=seatPos(i);P.g.position.set(x,.18,z);P.g.rotation.y=0;setSit(P.g,1);cush[i].material.emissive.setHex(0x6b4a10);ui();toast('Bạn đang ngồi ở đệm '+(i+1))}
+function go(i){if(taken.has(i))return toast('Đệm này đã có người');stand();const[x,z]=seatPos(i);P.tg=new T.Vector3(x,0,z);P.want=i}
+H.near=()=>{const p=P.g.position;let b=-1,bd=1e9;for(let i=0;i<60;i++){if(taken.has(i)||i===S.seat)continue;const[x,z]=seatPos(i),d=(x-p.x)**2+(z-p.z)**2;if(d<bd){bd=d;b=i}}go(b)};
+H.garden=()=>{stand();P.tg=new T.Vector3(12,0,4);P.want=-1;V.mode=2;V.dd=DIST[2];toast('Dạo vườn')};
+let layT=0,layD=1,layA=0,bellT=0;
+H.lay=(d,a)=>{layT=layD=d;layA=a};H.bell=()=>{bellT=3.5};
+
+const ray=new T.Raycaster(),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+function pick(e){const r=cv.getBoundingClientRect();ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-((e.clientY-r.top)/r.height)*2+1},cam);
+  const h=ray.intersectObjects(cush.concat([fl,gr]))[0];if(!h)return;const o=h.object;if(o.userData.i!=null)return go(o.userData.i);
+  stand();P.tg=new T.Vector3(cl(h.point.x,-7.5,23),0,cl(h.point.z,-11,14.5));P.want=-1}
+let dn=null,mv=0;
+cv.addEventListener('pointerdown',e=>{dn=[e.clientX,e.clientY];mv=0;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!dn)return;const dx=e.clientX-dn[0],dy=e.clientY-dn[1];mv+=Math.abs(dx)+Math.abs(dy);dn=[e.clientX,e.clientY];V.th-=dx*.006;V.ph=cl(V.ph-dy*.005,.3,1.5)});
+cv.addEventListener('pointerup',e=>{if(dn&&mv<8)pick(e);dn=null});
+cv.addEventListener('wheel',e=>{e.preventDefault();V.dd=cl(V.dd+e.deltaY*.02,4,45)},{passive:false});
+function rs(){const w=innerWidth,h=innerHeight;rd.setSize(w,h,false);cam.aspect=w/h;cam.fov=w<h?62:48;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
+
+const clk=new T.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clk.getDelta(),.05),t=clk.elapsedTime,g=P.g;
+  if(P.tg){const d=P.tg.clone().sub(g.position);d.y=0;const L=d.length();
+    if(L<.08){P.tg=null;if(P.want>=0){sit(P.want);P.want=-1}}
+    else{d.normalize();g.position.addScaledVector(d,Math.min(L,3.4*dt));g.rotation.y=Math.atan2(-d.x,-d.z);g.position.y=Math.abs(Math.sin(t*9))*.05}}
+  if(layT>0){layT-=dt;g.rotation.x=-layA*Math.sin(Math.PI*Math.max(layT,0)/layD)}else g.rotation.x=0;
+  if(bellT>0){bellT-=dt;bp.rotation.z=S.calm?0:Math.sin(t*5)*.3*bellT/3.5}
+  flames.forEach((l,i)=>l.intensity=S.calm?1:.9+Math.sin(t*9+i*2)*.15+Math.random()*.08);
+  halo.material.emissiveIntensity=.8+Math.sin(t*1.5)*.25;
+  if(!S.calm){for(let i=0;i<N;i++){pp[i*3+1]-=dt*.35;pp[i*3]+=Math.sin(t+i)*dt*.3;if(pp[i*3+1]<0)pp[i*3+1]=9}pg.attributes.position.needsUpdate=true}
+  V.tg.lerp(focus(),.07);V.d+=(V.dd-V.d)*.07;
+  cam.position.set(V.tg.x+V.d*Math.sin(V.ph)*Math.sin(V.th),V.tg.y+V.d*Math.cos(V.ph),V.tg.z+V.d*Math.sin(V.ph)*Math.cos(V.th));
+  cam.lookAt(V.tg);roof.visible=cam.position.y<6.8;rd.render(sc,cam)}
+tick();ui();
+})();
+</script>
+</body>
+</html>
